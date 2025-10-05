@@ -26,6 +26,10 @@ The geographic area plot is provided below.  A more indepth description of the f
 ![A plot of the coordinates for the large dataset](/GeographicArea.png)
 
 
+## Trip Distances
+
+[Trip Distancec Histogram](/TripDistanceHistogram.png)
+
 ## Filtering outliers and invalid data 
 <a name ="filtering"></a>
 Several iterations of filtering were attempted and an effort was made to generalize the solution.  Initially, a fixed bounding of lat/lon coordinates was used to force all trips to occur within a given geographic area.  This is somewhat difficult to apply more generally, since new unique coordinates would be required each time.
