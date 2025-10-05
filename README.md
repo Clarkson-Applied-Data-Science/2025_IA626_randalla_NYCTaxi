@@ -28,7 +28,7 @@ The geographic area plot is provided below.  A more indepth description of the f
 
 ## Trip Distances
 
-[Trip Distancec Histogram](/TripDistanceHistogram.png)
+![Trip Distancec Histogram](/TripDistanceHistogram.png)
 
 ## Filtering outliers and invalid data 
 <a name ="filtering"></a>
