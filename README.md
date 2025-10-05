@@ -1,8 +1,8 @@
 test
-##Date Range
+## Date Range
 The date range was determined using the trip pickup times.  Each row was converted to a DT object and compared against previous entries to determine the most recent and most historic values.  Default values in the past/future were used to initialize the values.  The dates could also have been evaluated based on the drop-off time to get some more recent items, though this effort was focused on the pickup times.
 
-##Field Names
+## Field Names
 The data file has an included header line where the data field names were retrieved.  They are shown below with an example value and a brief description.
     'medallion': 'C13BD886F362AC4D71FEB912091AB76A'         These are permits for taxi companies to operate in New York City.  Each one is a unique number and is transferable to others for a fee.
 
@@ -20,13 +20,14 @@ The data file has an included header line where the data field names were retrie
     'dropoff_longitude': '-73.952324'                       The longitude coordinate at the dropoff location.
     'dropoff_latitude': '40.826633'                         The latitude coordinate at the dropoff location.
 
-##Geographic Area
+## Geographic Area
 The geographic area plot is provided below.  A more indepth description of the filtering method is provided in [here](#filtering).   The area generally aligns with the tri-state area that would be typical of a NYC taxi trip.
 
 ![A plot of the coordinates for the large dataset](/GeographicArea.png)
 
 
-##Filtering outliers and invalid data <a name ="filtering"></a>
+## Filtering outliers and invalid data 
+<a name ="filtering"></a>
 Several iterations of filtering were attempted and an effort was made to generalize the solution.  Initially, a fixed bounding of lat/lon coordinates was used to force all trips to occur within a given geographic area.  This is somewhat difficult to apply more generally, since new unique coordinates would be required each time.
 
 Another angle was to use the trip distance and compare it to the lat/lon havershine distances.  This removes items where the lat/lon values and the trip_distance values do not align.  Some of the trips included in this data set appear to occur outside of the geographic region or have invalid lat/lon values and caused outliers to persist through the filtering.  Some trips occured only within Tennessee and some others occured via boats in the middle of the Atlantic Ocean apparently.  Since this effort was focused around NYC Taxi trips, these can be ignored.
