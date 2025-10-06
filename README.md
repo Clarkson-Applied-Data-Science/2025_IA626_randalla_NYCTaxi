@@ -30,13 +30,14 @@ Trip distances were binned to a variety of distances and plotted to show the num
 
 ### Binning section for trip distances.
 Example code is shown below.
+'''
         for i in tripDistanceBins:
             if float(line[9]) <i:
                 distBin[i]+=1
                 break
             if i == len(tripDistanceBins):
                 distBin[i] +=1
-                
+'''
 ![Trip Distancec Histogram](/TripDistanceHistogram.png)
 
 ## Filtering outliers and invalid data 
