@@ -2,6 +2,10 @@ test
 ## Date Range
 The date range was determined using the trip pickup times.  Each row was converted to a DT object and compared against previous entries to determine the most recent and most historic values.  Default values in the past/future were used to initialize the values.  The dates could also have been evaluated based on the drop-off time to get some more recent items, though this effort was focused on the pickup times.
 
+    The file has 13,971,118 lines.
+    The latest date is : 2013-12-31 23:59:57
+    The earliest date is : 2013-12-01 00:00:00
+
 ## Field Names
 The data file has an included header line where the data field names were retrieved.  They are shown below with an example value and a brief description.
     'medallion': 'C13BD886F362AC4D71FEB912091AB76A'         These are permits for taxi companies to operate in New York City.  Each one is a unique number and is transferable to others for a fee.
@@ -19,27 +23,6 @@ The data file has an included header line where the data field names were retrie
     'dropoff_longitude': '-73.952324'                       The longitude coordinate at the dropoff location.
     'dropoff_latitude': '40.826633'                         The latitude coordinate at the dropoff location.
 
-## Geographic Area
-The geographic area plot is provided below.  A more indepth description of the filtering method is provided in [here](#filtering).   The area generally aligns with the tri-state area that would be typical of a NYC taxi trip.
-
-![A plot of the coordinates for the large dataset](/GeographicArea.png)
-
-
-## Trip Distances
-Trip distances were binned to a variety of distances and plotted to show the number of occurences.  The bins were generated using a list and the modulous operator.  Iterating through the list in a loop until the value was no longer greater than the list value selected the appropriate bin and updated a dictionary with the counts.
-
-### Binning section for trip distances.
-Example code is shown below.
-```
-for i in tripDistanceBins:
-    if float(line[9]) <i:
-        distBin[i]+=1
-        break
-    if i == len(tripDistanceBins):
-        distBin[i] +=1
-```
-![Trip Distancec Histogram](/TripDistanceHistogram.png)
-
 ## Filtering outliers and invalid data 
 <a name ="filtering"></a>
 Several iterations of filtering were attempted and an effort was made to generalize the solution.  Initially, a fixed bounding of lat/lon coordinates was used to force all trips to occur within a given geographic area.  This is somewhat difficult to apply more generally, since new unique coordinates would be required each time.
@@ -49,3 +32,90 @@ Another angle was to use the trip distance and compare it to the lat/lon haversh
 The end solution was to use a fixed geographic point and use a radius around it to filter trips that did not start within a reasonable distance.  In this case a 100km radius was used around central NYC coordinates gathered from wikipedia.  This solution allows more options in the future to apply a similar code structure to other geographic areas without requiring major code revisions.
 
 ![another one](/NYC_Radius.png)
+
+## Geographic Area
+The geographic area plot is provided below.  A more indepth description of the filtering method is provided in [here](#filtering).   The area generally aligns with the tri-state area that would be typical of a NYC taxi trip.
+
+The highest lat/long  :  41.545189 | -72.347534
+The lowest lat/long   :  39.751335 | -75.280258
+
+![A plot of the coordinates for the large dataset](/GeographicArea.png)
+
+
+## Trip Distances
+Trip distances were binned to a variety of distances and plotted to show the number of occurences.  The bins were generated iterating through the list in a loop until the value was no longer greater than the list value selected the appropriate bin and updated a dictionary with the counts.  A bins variable was used in case the values for the bins needs to be adjusted.  Results were then displayed using a barplot.  Most of the trips are focused on the lower end of the distance scale.
+Example code is shown below.
+```
+tripDistanceBins = [0.5,.75,1,1.5,2,3,4,5,10,25]
+for i in tripDistanceBins:
+    if float(line[9]) <i:
+        distBin[i]+=1
+        break
+    if i == len(tripDistanceBins):
+        distBin[i] +=1
+```
+![Trip Distancec Histogram](/TripDistanceHistogram.png)
+
+
+## Min and Max Values
+Multiple approaches to caching the min and max values were used.  An improvement on these would be to generate methods that can be used in many spots without duplicating so much code. 
+
+One method used 2 variables to track the item.  This was initially used for debugging and troubleshooting, but ended up being effective enough to use for the data gathering.
+
+```
+if currentDate>cacheDateH:
+    cacheDateH=currentDate
+if currentDate<cacheDateL:
+    cacheDateL=currentDate
+```
+
+The next method used a list to compact this somewhat.  Many lists were still generated to support this.  The overall implementation was somewhat cleaner and easier to keep track of.  Ultimately some type of dictionary of lists would have been more preferred.
+```
+if float(line[9]) > tripDistMinMax[1]: tripDistMinMax[1]=float(line[9])
+if float(line[9]) < tripDistMinMax[0] and float(line[9]) > 0: tripDistMinMax[0]=float(line[9])
+```
+The min and max values are shown below.
+    Distance min: 0.01 -- max: 100.0
+    Time min: 1.0 -- max: 10800.0
+    Passengers min: 1.0 -- max: 9.0
+
+
+
+## Average Travel Distance
+
+Average travel distance was calculated using the provided Haversine distance calculator.  A running tally of trips and total distance was generated and the average caclculated at the end.  Trips of 0 distance reported were excluded from this summation.
+
+The data showed a total distance of 28,752,009.93686609 miles acrossed 13,432,221 trips for an average distance per trip of 2.140525378257705 miles
+
+## MySQL Data Types
+For the various fields, options are given for MySQL data types.  Most of self evident for which data type would be appropriate.  Vendor ID included all use 3 characters, though an additional character would give some assurance that future items wouldn't cause an overflow.  The store_and_fwd_flag reports Y/N and could be bool or varchar(1) depending on the required implementation.
+
+    medallian - varchar(32)
+    hack_license - varchar(32)
+    vendor ID - varchar(4)
+    rate code - int
+    store_and_fwd_flag - bool or varchar(1)
+    pickup_datetime - datetime
+    dropoff_datetime - datetime
+    passenger_count - int
+    trip_time_in_secs - int
+    trip_distance - decimal(10,2)
+    lat/long - decimal(8,6)
+
+
+## Passengers per hour
+The average passengers per hour was computed for the entire data set.  This means that all hours across the entire range were summarized together and averaged after full review.  This can be interpretted many ways, for the purposes of this review, the hours were analyzed together for all days.
+
+A code snippet shows the implementation.  A blank dictionary with each hour of the day included is generated.  Using the datetime object, the hour was used to update the appropriate dictionary item when a new trip was found.  The number of trips and the number of passengers was saved and used for the final computation.
+
+```
+dateDict = {k:[0,0] for k in range(0,24)}
+dateDict[currentDate.hour][0] += 1
+dateDict[currentDate.hour][1] += int(line[7])
+```
+
+For the entire dataset, the hour trend is shown.
+![passengers by hour, entire dataset](/fullPassengerPerHour.png)
+
+The same plot was generated on the summarized dataset.
+![passengers by hour, smapled dataset](/samplePassengerPerHour.png)
