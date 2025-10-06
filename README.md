@@ -5,7 +5,6 @@ The date range was determined using the trip pickup times.  Each row was convert
 ## Field Names
 The data file has an included header line where the data field names were retrieved.  They are shown below with an example value and a brief description.
     'medallion': 'C13BD886F362AC4D71FEB912091AB76A'         These are permits for taxi companies to operate in New York City.  Each one is a unique number and is transferable to others for a fee.
-
     'hack_license': '3FC36031EAC645D019BAC9C263F21CF7'      This is the license for the particular driver to operate in New York City.
     'vendor_id': 'VTS'                                      This indicates which provider provided the record of the trip.
     'rate_code': '1'                                        The code for the charging amount.
@@ -27,7 +26,17 @@ The geographic area plot is provided below.  A more indepth description of the f
 
 
 ## Trip Distances
+Trip distances were binned to a variety of distances and plotted to show the number of occurences.  The bins were generated using a list and the modulous operator.  Iterating through the list in a loop until the value was no longer greater than the list value selected the appropriate bin and updated a dictionary with the counts.
 
+### Binning section for trip distances.
+Example code is shown below.
+        for i in tripDistanceBins:
+            if float(line[9]) <i:
+                distBin[i]+=1
+                break
+            if i == len(tripDistanceBins):
+                distBin[i] +=1
+                
 ![Trip Distancec Histogram](/TripDistanceHistogram.png)
 
 ## Filtering outliers and invalid data 
