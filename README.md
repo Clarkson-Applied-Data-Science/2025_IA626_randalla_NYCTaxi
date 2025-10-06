@@ -1,4 +1,4 @@
-test
+
 ## Date Range
 The date range was determined using the trip pickup times.  Each row was converted to a DT object and compared against previous entries to determine the most recent and most historic values.  Default values in the past/future were used to initialize the values.  The dates could also have been evaluated based on the drop-off time to get some more recent items, though this effort was focused on the pickup times.
 
@@ -79,7 +79,24 @@ The min and max values are shown below.
     Time min: 1.0 -- max: 10800.0
     Passengers min: 1.0 -- max: 9.0
 
+## Unique Values
+The categorical items all have varying amounts of unique values.  The medallion and license columns contain a very large number of unique values and are not included in this summary.  A dictionary is provided in the code for review if required.
 
+To genrate the dictionaries a small definition was used to consolidate some of the lines of code.  This is used to check if a key exists and to generate a new key if it isn't found.  The numbers of occurences of these keys is also stored for future review.
+
+```
+def checkDict(key,dict):
+    if key not in dict:
+        dict[key]=1
+    else: dict[key]+=1
+```
+
+These items were smaller in size and the unique values are included.  There are 2 vendors that provide this service.  Rates are unique to different areas and relate back to a lookup table that NYC provides.  This dataset includes 14 different rate codes.
+
+Vendors:
+    {'VTS': 7057292, 'CMT': 6913826}
+Rates:
+    {'1': 13638315, '2': 257599, '3': 24971, '5': 41889, '4': 4602, '0': 3537, '8': 5, '6': 180, '13': 2, '210': 8, '7': 6, '9': 2, '65': 1, '15': 1}
 
 ## Average Travel Distance
 
@@ -102,6 +119,14 @@ For the various fields, options are given for MySQL data types.  Most of self ev
     trip_distance - decimal(10,2)
     lat/long - decimal(8,6)
 
+## Sampled Data
+To generate a sampled dataset, an if statement arrangement was used.  The Modulous operator provides a convenient way to check things in an orderly way.  For the purposes of this exercise a hard coded value of 1000 was used, though a variable could also be utilized.  Every 1000 rows, a new line is written to a blank CSV and saved to disk for review later.
+
+```
+if counter % 1000 == 0: #write a subset for every 1000 rows.
+    writer.writerow(line)
+```
+
 
 ## Passengers per hour
 The average passengers per hour was computed for the entire data set.  This means that all hours across the entire range were summarized together and averaged after full review.  This can be interpretted many ways, for the purposes of this review, the hours were analyzed together for all days.
@@ -114,8 +139,8 @@ dateDict[currentDate.hour][0] += 1
 dateDict[currentDate.hour][1] += int(line[7])
 ```
 
-For the entire dataset, the hour trend is shown.
+For the entire dataset, the hour trend is shown.  A trend in the number of passengers in observed from the Midnight-4am hour, aligning with typical night establishment hours.  The passengers per trip takes a sharp drop, then slowly increases through the day.  Small jumps at 3pm and 6pm which are typical end of workday timeframes.
 ![passengers by hour, entire dataset](/fullPassengerPerHour.png)
 
-The same plot was generated on the summarized dataset.
+The same plot was generated on the summarized dataset.  The sampled dataset shows more variation than the longer dataset.  Similar trends are noted with more granularity shown.  2am and 4am are standing out as well as 4-7pm.
 ![passengers by hour, smapled dataset](/samplePassengerPerHour.png)
